@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="FiveChess:jar2">
+    <output-path>$PROJECT_DIR$/out/artifacts/EasyServer_Jar</output-path>
+    <root id="archive" name="FiveChess.jar">
+      <element id="module-output" name="FiveChess" />
+    </root>
+  </artifact>
+</component>
