@@ -14,6 +14,11 @@ public class ChessHandlerMessage implements IMessageHandler{
 
     HashMap<Object,Object> hashMap = new HashMap<>();
 
+    /**
+     * 场景描述：
+     * A加入了房间0005，然后等待一位好友加入。此时服务器将0005作为key保存到hashMap中
+     * 当另外一位B也加入了房间0005，那么服务器将发送2条消息，分别告诉A和B，对方已经上线。
+     */
     @Override
     public Object onConnect(String message, BlockingQueue<MessageTransmitter> messageTransmitterQueue) {
         System.out.println("onConnect:"+message);

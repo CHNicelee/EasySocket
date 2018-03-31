@@ -5,9 +5,9 @@ package edu.csu.ice;
  */
 public class MessageTransmitter {
 
-    private Object toKey;//如果key为null  那么进行群发  发送给所有的Client   否则发给key对应的Client
-    private Object fromKey;
-    private String message;
+    private Object toKey;//对方的key  通过这个key取到对方的socket  然后将message发送给对方
+    private Object fromKey;//自己的key
+    private String message;//待发送的message
     private Object messageKey;//返回消息的时候需要用到
 
 

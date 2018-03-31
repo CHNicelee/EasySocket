@@ -37,7 +37,10 @@ public interface IMessageHandler {
         server.start();//启动线程
 ```
 
+传输的消息是String类型，我们通常都会自己定义一个消息传输对象，然后通过Gson将对象转化为String类型，然后在服务器端将message转化为自定义的类型。
+
 ## Client端
+
 Client端大家可以根据自己的需要进行开发，我要在Android下面实现一个即时通讯的功能，就封装了一个SocketUtil，需要实现HandleMessage接口：
 ```
     public interface MessageHandler {
