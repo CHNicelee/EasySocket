@@ -9,8 +9,8 @@ public class ServerClient {
     public static void main(String[] args) {
         EasyServer server =new EasyServer.Builder()
                 .setPort(8885)
-                .setMessageHandler(new ChessHandlerMessage())
+                .setMessageHandler(new ChessHandlerMessage())//自己实现的接口
                 .build();
-        server.start();
+        server.start();//启动线程
     }
 }
