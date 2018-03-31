@@ -25,8 +25,14 @@ public interface IMessageHandler {
 - 在onConnect()方法中，用户第一次发送的消息会传递过来，需要用户解析message，并返回对应的key。
   用户可以在这个方法中进行一些逻辑操作，比如从数据库获取一些别人在他离线时发给他的消息，然后通过
   messageTransmitterQueue发送出去。
+
 - 在handleMessage方法中，用户需要将message封装成一个MessageTransmitter对象，用于指定发送者的key，接受者的key，以及消息本身的key。
+
 - handleFailedMessage，用于处理发送失败的消息
+
+  MessageHandler的例子在/src/client中
+
+  ​
 
 3. 初始化EasyServer并启动线程：
 ```
@@ -38,6 +44,8 @@ public interface IMessageHandler {
 ```
 
 传输的消息是String类型，我们通常都会自己定义一个消息传输对象，然后通过Gson将对象转化为String类型，然后在服务器端将message转化为自定义的类型。
+
+
 
 ## Client端
 
