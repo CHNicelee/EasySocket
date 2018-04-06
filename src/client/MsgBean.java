@@ -4,29 +4,31 @@ package client;
  * Created by ice on 2018/3/29.
  */
 public class MsgBean {
-
-    public final static String CONNECT = "connect";
-    public final static String MOVE = "move";
+    public final static String type_connect = "connected";
+    public final static String type_newChess = "newChess";
+    public static String type_disconnect = "disconnect";
 
     public MsgBean() {
     }
 
-    public MsgBean(String type, Integer from, Integer to, Integer x, Integer y, String message) {
-        this.type = type;
-        this.from = from;
-        this.to = to;
+    public MsgBean(Integer x, Integer y) {
         this.x = x;
         this.y = y;
-        this.message = message;
     }
-
-    private String type;
-    private Integer from;
-    private Integer to;
-    private Integer x;
     private Integer y;
+    private Integer x;
+    private Integer color;
     private String message;
     private Integer room;
+    private Boolean moveFirst;
+
+    public Integer getColor() {
+        return color;
+    }
+
+    public void setColor(Integer color) {
+        this.color = color;
+    }
 
     public Integer getRoom() {
         return room;
@@ -34,30 +36,6 @@ public class MsgBean {
 
     public void setRoom(Integer room) {
         this.room = room;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public Integer getFrom() {
-        return from;
-    }
-
-    public void setFrom(Integer from) {
-        this.from = from;
-    }
-
-    public Integer getTo() {
-        return to;
-    }
-
-    public void setTo(Integer to) {
-        this.to = to;
     }
 
     public int getX() {
@@ -82,5 +60,21 @@ public class MsgBean {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public void setY(Integer y) {
+        this.y = y;
+    }
+
+    public void setX(Integer x) {
+        this.x = x;
+    }
+
+    public Boolean getMoveFirst() {
+        return moveFirst;
+    }
+
+    public void setMoveFirst(Boolean moveFirst) {
+        this.moveFirst = moveFirst;
     }
 }

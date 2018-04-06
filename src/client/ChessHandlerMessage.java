@@ -1,8 +1,8 @@
 package client;
 
 import com.google.gson.Gson;
+import edu.csu.ice.EasyMessage;
 import edu.csu.ice.IMessageHandler;
-import edu.csu.ice.MessageTransmitter;
 
 import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
@@ -12,42 +12,66 @@ import java.util.concurrent.BlockingQueue;
  */
 public class ChessHandlerMessage implements IMessageHandler{
 
-    HashMap<Object,Object> hashMap = new HashMap<>();
+    HashMap<Integer,Integer> waitingMap = new HashMap<>();
+    HashMap<Integer,Integer> roomPeople = new HashMap<>();
+    private BlockingQueue<EasyMessage> messageQueue;
 
-    /**
-     * 场景描述：
-     * A加入了房间0005，然后等待一位好友加入。此时服务器将0005作为key保存到hashMap中
-     * 当另外一位B也加入了房间0005，那么服务器将发送2条消息，分别告诉A和B，对方已经上线。
-     */
+
     @Override
-    public Object onConnect(String message, BlockingQueue<MessageTransmitter> messageTransmitterQueue) {
-        System.out.println("onConnect:"+message);
-        Gson gson = new Gson();
-        MsgBean msgBean = gson.fromJson(message,MsgBean.class);
-        if(hashMap.containsKey(msgBean.getRoom())){
-            Object waitingKey = hashMap.get(msgBean.getRoom());
-            messageTransmitterQueue.add(new MessageTransmitter(waitingKey,null,msgBean.getFrom()+":connected",-1));
-            messageTransmitterQueue.add(new MessageTransmitter(msgBean.getFrom(),null,waitingKey+":connected",-1));
-            hashMap.remove(msgBean.getRoom());
-        }else {
-            hashMap.put(msgBean.getRoom(), msgBean.getFrom());
+    public void onConnect(EasyMessage easyMessage, BlockingQueue<EasyMessage> messageQueue) {
+        this.messageQueue = messageQueue;
+        if(EasyMessage.type_reconnect.equalsIgnoreCase(easyMessage.getType())){
+            return;
         }
-        return msgBean.getFrom();
-    }
-
-    @Override
-    public MessageTransmitter handleMessage(String message) {
-        System.out.println("handleMessage"+message);
-        if(message == null)return null;
         Gson gson = new Gson();
-        MsgBean msgBean = gson.fromJson(message, MsgBean.class);
+        MsgBean msgBean = gson.fromJson(easyMessage.getMessage().toString(), MsgBean.class);
 
-        return new MessageTransmitter(msgBean.getTo(),msgBean.getFrom(),message,message.hashCode());
+        Integer waitingSocketKey = waitingMap.get(msgBean.getRoom());
+
+        if(waitingSocketKey!=null && !waitingSocketKey.equals(easyMessage.getFromKey())) {
+
+            //告诉房间里面的两个人  对方已经上线了
+            int first = (int) (Math.random()*2);
+            MsgBean msgBean1 = new MsgBean(0,0);
+            msgBean1.setColor(first);
+            msgBean1.setMessage(MsgBean.type_connect);
+            msgBean1.setMoveFirst(true);
+            EasyMessage noticeMessage1 = new EasyMessage("connected", easyMessage.getFromKey(), waitingSocketKey, msgBean1);
+            MsgBean msgBean2 = new MsgBean(0,0);
+            msgBean2.setColor(1-first);
+            msgBean2.setMessage(MsgBean.type_connect);
+            msgBean2.setMoveFirst(false);
+            EasyMessage noticeMessage2 = new EasyMessage("connected", waitingSocketKey, easyMessage.getFromKey(), msgBean2);
+            messageQueue.add(noticeMessage1);
+            messageQueue.add(noticeMessage2);
+            waitingMap.remove(msgBean.getRoom());
+            roomPeople.put(waitingSocketKey,easyMessage.getFromKey());
+            roomPeople.put(easyMessage.getFromKey(),waitingSocketKey);
+        }else{
+            waitingMap.put(msgBean.getRoom(),easyMessage.getFromKey());
+        }
     }
 
     @Override
-    public boolean handleFailedMessage(MessageTransmitter transmitter) {
+    public boolean onInterceptMessageDispatch(EasyMessage easyMessage, BlockingQueue<EasyMessage> messageQueue) {
+        System.out.println("onInterceptMessageDispatch:"+easyMessage + "messageQueue size:"+messageQueue.size());
+
         return false;
     }
 
+    @Override
+    public void onDispatchMessageFailed(EasyMessage easyMessage) {
+
+    }
+
+    @Override
+    public void onDisconnect(Integer key) {
+        Integer friendKey = roomPeople.get(key);
+        roomPeople.remove(friendKey);
+        roomPeople.remove(key);
+        MsgBean msgBean = new MsgBean();
+        msgBean.setMessage(MsgBean.type_disconnect);
+
+        messageQueue.add(new EasyMessage(EasyMessage.type_user_message,null,friendKey,msgBean));
+    }
 }

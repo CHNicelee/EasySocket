@@ -4,29 +4,34 @@ import com.google.gson.Gson;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.Scanner;
 
 /**
  * Created by ice on 2018/3/29.
  */
 public class Client {
     Socket socket = null;
-
+    int count = 1000;
+    Socket[] sockets = new Socket[count];
     public static void main(String[] args) throws IOException, InterruptedException {
         Client client = new Client();
         try {
-            client.socket = new Socket("192.168.191.1", 8885);
+            for (int i = 0; i < client.count; i++) {
+                client.socket = new Socket("192.168.191.1", 8885);
 
-            OutputStream os = client.socket.getOutputStream();
-            Writer writer = new OutputStreamWriter(os, "UTF-8");
-            MsgBean msgBean = new MsgBean(MsgBean.CONNECT, 1001, 1001, 2, 3, "connect");
-            msgBean.setRoom(10086);
-            Gson gson = new Gson();
-            writer.write(gson.toJson(msgBean) + "\n");
-            writer.flush();
+                OutputStream os = client.socket.getOutputStream();
+                Writer writer = new OutputStreamWriter(os, "UTF-8");
+//                MsgBean msgBean = new MsgBean( 1001+i, 1001, 2, 3, "connect");
+                MsgBean msgBean = new MsgBean();
+                msgBean.setRoom(10086+i);
+                Gson gson = new Gson();
+                writer.write(gson.toJson(msgBean) + "\n");
+                writer.flush();
+                client.sockets[i] = client.socket;
+            }
+
 
             client.new SocketThread().start();
-
+/*
             Scanner scanner = new Scanner(System.in);
             while (true) {
                 System.out.print("请输入消息");
@@ -40,7 +45,7 @@ public class Client {
                 writer.write(gson.toJson(msgBean) + "\n");
                 writer.flush();
 
-            }
+            }*/
         } catch (IOException e) {
             e.printStackTrace();
         }

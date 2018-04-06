@@ -7,14 +7,34 @@ import java.util.concurrent.BlockingQueue;
  */
 public interface IMessageHandler {
 
-    //用于处理客户端第一次发送的消息
-    //通过message获得用于保存socket的主键
-    Object onConnect(String message, BlockingQueue<MessageTransmitter> messageTransmitterQueue);
+    /**
+     * 当有新的Socket连接的时候会回调
+     * @param easyMessage   连接之后第一次发送的EasyMessage，默认第一次发送的就是用于连接的消息
+     * @param messageQueue    将待发送的EasyMessage可以添加到此队列
+     */
+    void onConnect(EasyMessage easyMessage, BlockingQueue<EasyMessage> messageQueue);
 
-    //将message包装成MessageTransmitter进行发送
-    MessageTransmitter handleMessage(String message);
+    /**
+     * 拦截消息的发送
+     * @param easyMessage  客户端发送过来的easyMessage
+     * @param messageQueue   将待发送的EasyMessage可以添加到此队列
+     * @return
+     * true表示拦截消息，服务器不再转发这条消息。
+     * false 表示不拦截消息，让服务器根据EasyMessage里面的toKey转发消息
+     * 如果想自己处理消息的发送，请返回true，并根据业务逻辑，利用messageQueue发送消息
+     */
+    boolean onInterceptMessageDispatch(EasyMessage easyMessage,BlockingQueue<EasyMessage> messageQueue);
 
-    //有些消息发送失败了 可能是对方关闭了socket  用户可以选择在此方法里面消息进行保存
-    boolean handleFailedMessage(MessageTransmitter transmitter);
+    /**
+     * 消息发送失败的时候会回调此方法，很大原因是因为对方的socket关闭了
+     * @param easyMessage  发送失败的EasyMessage
+     */
+    void onDispatchMessageFailed(EasyMessage easyMessage);
+
+    /**
+     * 当socket断开连接的时候会回调此函数
+     * @param key
+     */
+    void onDisconnect(Integer key);
 
 }

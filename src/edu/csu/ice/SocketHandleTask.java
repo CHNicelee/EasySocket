@@ -12,16 +12,17 @@ import java.util.concurrent.BlockingQueue;
  * 用于从socket读取消息
  * Created by ice on 2018/3/29.
  */
-public class SocketHandleTask<T> implements Runnable {
+public class SocketHandleTask implements Runnable {
 
-    private final BlockingQueue<MessageTransmitter> transmitterQueue;
+    private final BlockingQueue<EasyMessage> transmitterQueue;
     private Socket socket;
     private IMessageHandler messageHandler;
-
-    public SocketHandleTask(Socket socket, IMessageHandler messageHandler, BlockingQueue<MessageTransmitter> transmitterQueue) {
+    private Converter converter;
+    public SocketHandleTask(Socket socket, IMessageHandler messageHandler, BlockingQueue<EasyMessage> transmitterQueue,Converter converter) {
         this.socket = socket;
         this.messageHandler = messageHandler;
         this.transmitterQueue = transmitterQueue;
+        this.converter = converter;
     }
 
     @Override
@@ -39,8 +40,17 @@ public class SocketHandleTask<T> implements Runnable {
                     break;
                 }
 
-                MessageTransmitter messageTransmitter = messageHandler.handleMessage(msg);
-                transmitterQueue.add(messageTransmitter);//加入到队列之中  让MessageDispatcher对消息进行分发
+                EasyMessage obj = converter.toEasyMessage(msg);
+                boolean intercept = messageHandler.onInterceptMessageDispatch(obj,transmitterQueue);
+                if(!intercept) {
+                    transmitterQueue.add(obj);
+                }else {
+                    obj.setFromKey(null);
+                    obj.setType(EasyMessage.type_connect_refused);//定义消息类型
+                    obj.setToKey(obj.getFromKey());//发给自己
+                    transmitterQueue.add(obj);
+                }
+//                messageQueue.add(messageTransmitter);//加入到队列之中  让MessageDispatcher对消息进行分发
             }
         } catch (IOException e) {
             e.printStackTrace();

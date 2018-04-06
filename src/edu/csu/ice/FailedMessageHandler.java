@@ -7,11 +7,11 @@ import java.util.concurrent.BlockingQueue;
  */
 public class FailedMessageHandler implements Runnable{
 
-    private final BlockingQueue<MessageTransmitter> transmitterQueue;
-    BlockingQueue<MessageTransmitter> failedTransmitters;
+    private final BlockingQueue<EasyMessage> transmitterQueue;
+    BlockingQueue<EasyMessage> failedTransmitters;
     IMessageHandler messageHandler;
 
-    public FailedMessageHandler(BlockingQueue<MessageTransmitter> transmitterQueue,BlockingQueue<MessageTransmitter> failedTransmitters, IMessageHandler messageHandler) {
+    public FailedMessageHandler(BlockingQueue<EasyMessage> transmitterQueue,BlockingQueue<EasyMessage> failedTransmitters, IMessageHandler messageHandler) {
         this.transmitterQueue = transmitterQueue;
         this.failedTransmitters = failedTransmitters;
         this.messageHandler = messageHandler;
@@ -19,11 +19,11 @@ public class FailedMessageHandler implements Runnable{
 
     @Override
     public void run() {
-        if(failedTransmitters==null) throw new IllegalArgumentException("transmitterQueue could not be null");
+        if(failedTransmitters==null) throw new IllegalArgumentException("messageQueue could not be null");
         while (true){
             try {
-                MessageTransmitter transmitter = failedTransmitters.take();
-                messageHandler.handleFailedMessage(transmitter);//让用户进行处理
+                EasyMessage transmitter = failedTransmitters.take();
+                messageHandler.onDispatchMessageFailed(transmitter);//让用户进行处理
 
             } catch (InterruptedException e) {
                 e.printStackTrace();
