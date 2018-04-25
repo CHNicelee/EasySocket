@@ -1,7 +1,5 @@
 package edu.csu.ice;
 
-import com.google.gson.Gson;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,8 +29,6 @@ public class EasyServer extends Thread{
 
     private Map<Integer, Socket> mConnections;//Object为主键   比如用户id等等
 
-    private Gson gson = new Gson();
-
     public EasyServer() {
         this(DEFAULT_PORT);
     }
@@ -46,6 +42,12 @@ public class EasyServer extends Thread{
         mWorkThreadPool = Executors.newCachedThreadPool();
     }
 
+    /**
+     * 本线程用于监听端口号，有socket连接上来了，就开启一个新的线程，用于用于从输入流获取消息，获取的消息通过
+     * 转发线程进行转发
+     * 转发失败的消息由失败处理线程进行处理
+     * 还有一个用于发送心跳包的线程，每隔一段时间就发送心跳包
+     */
     @Override
     public void run() {
         for (int i = 0; i < mMessageDispatchThreadSize; i++) {
